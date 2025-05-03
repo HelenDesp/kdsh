@@ -1,4 +1,3 @@
-
 import NFTDashboard from "./components/NFTDashboard";
 
 function App() {

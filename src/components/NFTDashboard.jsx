@@ -4,7 +4,7 @@ import { ethers } from "ethers";
 const CONTRACT_ADDRESS = "0x28D744dAb5804eF913dF1BF361E06Ef87eE7FA47";
 const ABI = [
   "function balanceOf(address owner) view returns (uint256)",
-  "function tokenOfOwnerByIndex(address owner, uint256 index) view returns (uint256)",
+  "function ownerOf(uint256 tokenId) view returns (address)",
   "function tokenURI(uint256 tokenId) view returns (string)"
 ];
 
@@ -25,16 +25,20 @@ export default function NFTDashboard() {
     try {
       const provider = new ethers.BrowserProvider(window.ethereum);
       const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-      const balance = await contract.balanceOf(wallet);
       const nftList = [];
 
-      for (let i = 0; i < balance; i++) {
-        const tokenId = await contract.tokenOfOwnerByIndex(wallet, i);
-        const tokenURI = await contract.tokenURI(tokenId);
-
-        const response = await fetch(tokenURI);
-        const metadata = await response.json();
-        nftList.push({ tokenId: tokenId.toString(), ...metadata });
+      for (let tokenId = 0; tokenId <= 7403; tokenId++) {
+        try {
+          const owner = await contract.ownerOf(tokenId);
+          if (owner.toLowerCase() === wallet.toLowerCase()) {
+            const tokenURI = await contract.tokenURI(tokenId);
+            const response = await fetch(tokenURI);
+            const metadata = await response.json();
+            nftList.push({ tokenId: tokenId.toString(), ...metadata });
+          }
+        } catch (err) {
+          continue;
+        }
       }
 
       setNfts(nftList);

@@ -27,7 +27,7 @@ export default function NFTDashboard() {
       const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
       const nftList = [];
 
-      for (let tokenId = 0; tokenId <= 7403; tokenId++) {
+      for (let tokenId = 0; tokenId <= 40; tokenId++) {
         try {
           const owner = await contract.ownerOf(tokenId);
           if (owner.toLowerCase() === wallet.toLowerCase()) {

@@ -2,11 +2,7 @@ import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 
 const CONTRACT_ADDRESS = "0x28D744dAb5804eF913dF1BF361E06Ef87eE7FA47";
-const ABI = [
-  "function balanceOf(address owner) view returns (uint256)",
-  "function ownerOf(uint256 tokenId) view returns (address)",
-  "function tokenURI(uint256 tokenId) view returns (string)"
-];
+const ALCHEMY_BASE_URL = "https://base-mainnet.g.alchemy.com/v2/-h4g9_mFsBgnf1Wqb3aC7Qj06rOkzW-m";
 
 export default function NFTDashboard() {
   const [wallet, setWallet] = useState(null);
@@ -23,30 +19,26 @@ export default function NFTDashboard() {
   const loadNFTs = async () => {
     setLoading(true);
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
-      const nftList = [];
+      const fetchURL = `${ALCHEMY_BASE_URL}/getNFTsForOwner?owner=${wallet}&contractAddresses[]=${CONTRACT_ADDRESS}&withMetadata=true`;
+      const res = await fetch(fetchURL);
+      const data = await res.json();
 
-      for (let tokenId = 1; tokenId <= 40; tokenId++) {
-        try {
-          const owner = await contract.ownerOf(tokenId);
-          if (owner.toLowerCase() === wallet.toLowerCase()) {
-            let tokenURI = await contract.tokenURI(tokenId);
-            if (tokenURI.startsWith("ipfs://")) {
-              tokenURI = tokenURI.replace("ipfs://", "https://ipfs.io/ipfs/");
-            }
-            const response = await fetch(tokenURI);
-            const metadata = await response.json();
-            nftList.push({ tokenId: tokenId.toString(), ...metadata });
-          }
-        } catch (err) {
-          continue;
-        }
-      }
+      const nftList = data.ownedNfts.map((nft) => {
+        const metadata = nft.metadata;
+        const image = metadata.image?.startsWith("ipfs://")
+          ? metadata.image.replace("ipfs://", "https://ipfs.io/ipfs/")
+          : metadata.image;
+        return {
+          tokenId: parseInt(nft.tokenId, 16).toString(),
+          name: metadata.name,
+          description: metadata.description,
+          image,
+        };
+      });
 
       setNfts(nftList);
     } catch (err) {
-      console.error("Failed to load NFTs", err);
+      console.error("Alchemy fetch failed", err);
     }
     setLoading(false);
   };
@@ -72,7 +64,7 @@ export default function NFTDashboard() {
               {nfts.map((nft) => (
                 <div key={nft.tokenId} className="border rounded p-4 shadow">
                   <img
-                    src={nft.image?.startsWith("ipfs://") ? nft.image.replace("ipfs://", "https://ipfs.io/ipfs/") : nft.image}
+                    src={nft.image}
                     alt={`NFT ${nft.tokenId}`}
                     className="mb-2 w-full"
                   />

@@ -27,11 +27,14 @@ export default function NFTDashboard() {
       const contract = new ethers.Contract(CONTRACT_ADDRESS, ABI, provider);
       const nftList = [];
 
-      for (let tokenId = 0; tokenId <= 40; tokenId++) {
+      for (let tokenId = 1; tokenId <= 40; tokenId++) {
         try {
           const owner = await contract.ownerOf(tokenId);
           if (owner.toLowerCase() === wallet.toLowerCase()) {
-            const tokenURI = await contract.tokenURI(tokenId);
+            let tokenURI = await contract.tokenURI(tokenId);
+            if (tokenURI.startsWith("ipfs://")) {
+              tokenURI = tokenURI.replace("ipfs://", "https://ipfs.io/ipfs/");
+            }
             const response = await fetch(tokenURI);
             const metadata = await response.json();
             nftList.push({ tokenId: tokenId.toString(), ...metadata });

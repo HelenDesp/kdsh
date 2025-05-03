@@ -71,7 +71,11 @@ export default function NFTDashboard() {
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {nfts.map((nft) => (
                 <div key={nft.tokenId} className="border rounded p-4 shadow">
-                  <img src={nft.image} alt={`NFT ${nft.tokenId}`} className="mb-2 w-full" />
+                  <img
+                    src={nft.image?.startsWith("ipfs://") ? nft.image.replace("ipfs://", "https://ipfs.io/ipfs/") : nft.image}
+                    alt={`NFT ${nft.tokenId}`}
+                    className="mb-2 w-full"
+                  />
                   <h2 className="text-lg font-semibold">#{nft.tokenId} — {nft.name}</h2>
                   <p className="text-sm text-gray-600">{nft.description}</p>
                 </div>

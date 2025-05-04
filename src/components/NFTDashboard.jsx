@@ -14,22 +14,26 @@ export default function NFTDashboard() {
     setLoading(true);
     try {
       const url = `${ALCHEMY_API_KEY}/getNFTsForOwner?owner=${address}&contractAddresses[]=${CONTRACT_ADDRESS}&withMetadata=true`;
+      console.log("Fetching NFTs from:", url);
       const res = await fetch(url);
       const data = await res.json();
-      const nftList = data.ownedNfts.map((nft) => {
-        const metadata = nft.metadata;
-        const image = metadata.image?.startsWith("ipfs://")
-          ? metadata.image.replace("ipfs://", "https://ipfs.io/ipfs/")
-          : metadata.image;
-        return {
-          tokenId: nft.tokenId.startsWith("0x")
-            ? parseInt(nft.tokenId, 16).toString()
-            : nft.tokenId,
-          name: metadata.name,
-          description: metadata.description,
-          image,
-        };
-      });
+      console.log("API response:", data);
+      const nftList = data.ownedNfts
+        .filter(nft => nft.metadata && nft.metadata.image)
+        .map((nft) => {
+          const metadata = nft.metadata;
+          const image = metadata.image.startsWith("ipfs://")
+            ? metadata.image.replace("ipfs://", "https://ipfs.io/ipfs/")
+            : metadata.image;
+          return {
+            tokenId: nft.tokenId.startsWith("0x")
+              ? parseInt(nft.tokenId, 16).toString()
+              : nft.tokenId,
+            name: metadata.name,
+            description: metadata.description,
+            image,
+          };
+        });
       setNfts(nftList);
     } catch (err) {
       console.error("Failed to fetch NFTs", err);

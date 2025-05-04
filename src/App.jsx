@@ -1,20 +1,37 @@
-import { getDefaultWallets, RainbowKitProvider, darkTheme } from "@rainbow-me/rainbowkit";
-import { WagmiConfig, createConfig, configureChains } from "wagmi";
+import { WagmiProvider, createConfig, http } from "wagmi";
 import { base } from "wagmi/chains";
-import { publicProvider } from "wagmi/providers/public";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import {
+  getDefaultConfig,
+  RainbowKitProvider,
+  lightTheme,
+} from "@rainbow-me/rainbowkit";
 import "@rainbow-me/rainbowkit/styles.css";
 import NFTDashboard from "./components/NFTDashboard";
 
-const { chains, publicClient } = configureChains([base], [publicProvider()]);
-const { connectors } = getDefaultWallets({ appName: "ReVerse Genesis", projectId: "reverse-genesis-dapp", chains });
-const wagmiConfig = createConfig({ autoConnect: true, connectors, publicClient });
+const config = createConfig(
+  getDefaultConfig({
+    appName: "ReVerse Genesis",
+    projectId: "WALLETCONNECT_PROJECT_ID", // replace with real ID
+    chains: [base],
+    transports: {
+      [base.id]: http(),
+    },
+  })
+);
 
-export default function App() {
+const queryClient = new QueryClient();
+
+function App() {
   return (
-    <WagmiConfig config={wagmiConfig}>
-      <RainbowKitProvider chains={chains} theme={darkTheme()}>
-        <NFTDashboard />
-      </RainbowKitProvider>
-    </WagmiConfig>
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider theme={lightTheme()}>
+          <NFTDashboard />
+        </RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
   );
 }
+
+export default App;

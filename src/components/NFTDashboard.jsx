@@ -1,9 +1,9 @@
+import { useEffect, useState } from "react";
 import { useAccount } from "wagmi";
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-import { useEffect, useState } from "react";
 
 const CONTRACT_ADDRESS = "0x28D744dAb5804eF913dF1BF361E06Ef87eE7FA47";
-const ALCHEMY_BASE_URL = "https://base-mainnet.g.alchemy.com/v2/-h4g9_mFsBgnf1Wqb3aC7Qj06rOkzW-m";
+const ALCHEMY_API_KEY = "https://base-mainnet.g.alchemy.com/v2/-h4g9_mFsBgnf1Wqb3aC7Qj06rOkzW-m";
 
 export default function NFTDashboard() {
   const { address, isConnected } = useAccount();
@@ -13,7 +13,7 @@ export default function NFTDashboard() {
   const loadNFTs = async () => {
     setLoading(true);
     try {
-      const url = `${ALCHEMY_BASE_URL}/getNFTsForOwner?owner=${address}&contractAddresses[]=${CONTRACT_ADDRESS}&withMetadata=true`;
+      const url = `${ALCHEMY_API_KEY}/getNFTsForOwner?owner=${address}&contractAddresses[]=${CONTRACT_ADDRESS}&withMetadata=true`;
       const res = await fetch(url);
       const data = await res.json();
       const nftList = data.ownedNfts.map((nft) => {
@@ -22,7 +22,9 @@ export default function NFTDashboard() {
           ? metadata.image.replace("ipfs://", "https://ipfs.io/ipfs/")
           : metadata.image;
         return {
-          tokenId: nft.tokenId.startsWith("0x") ? parseInt(nft.tokenId, 16).toString() : nft.tokenId,
+          tokenId: nft.tokenId.startsWith("0x")
+            ? parseInt(nft.tokenId, 16).toString()
+            : nft.tokenId,
           name: metadata.name,
           description: metadata.description,
           image,
